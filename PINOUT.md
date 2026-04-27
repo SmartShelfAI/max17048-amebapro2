@@ -30,8 +30,8 @@
 | 17 | PD_17 | GPIO | — | 🔵 Free |
 | 18 | PD_16 | SERIAL2_RX | — | 🔵 Free |
 | 19 | PD_15 | SERIAL2_TX | — | 🔵 Free |
-| 20 | PD_14 | GPIO | Power state tracking (mirrored signal from Pin 21) | ✅ Occupied |
-| 21 | PA_2 | SERIAL1_TX / A6 | System status / power management output | ✅ Occupied |
+| 20 | PD_14 | GPIO | Deep-sleep state read (duplicated wake signal) | ✅ Occupied |
+| 21 | PA_2 | SERIAL1_TX / A6 | AON wake source only (cannot read as GPIO) | ✅ Occupied |
 | 22 | PA_3 | SERIAL1_RX / A7 | — | 🔵 Free |
 | 23 | PF_9 | LED_B (Blue) | On-board LED | ✅ Occupied |
 | 24 | PE_6 | LED_G (Green) | On-board LED | ✅ Occupied |
@@ -60,7 +60,10 @@
 - **Pin 9/10 cannot be used for MAX17048** without re-wiring ADS1256 DRDY/CS to free pins (3, 4, 5, 6, 8, 11)
 - **Pin 3 (SPI1_SS)** is free — can be used as additional GPIO if needed
 - **I2C bus on 12/13** supports multiple devices — currently SHT3x (temp/humidity) + MAX17048 (battery)
-- **Pin 20 / Pin 21** — power state tracking pair. Pin 21 outputs system status / power management signal, which is mirrored/detected on Pin 20 for sleep/wake state monitoring
+- **Pin 20 / Pin 21** — deep-sleep wake pair. Both pins receive the same external signal:
+  - **Pin 21 (AON wake)** — only wakes the board from deep sleep; cannot be read as GPIO
+  - **Pin 20 (STATE_PIN)** — regular GPIO that reads the same signal level (HIGH = active, LOW → deep sleep after 150 ms debounce)
+  - Both pins are driven by the same control signal (e.g., from LDR or door sensor)
 - All I2C pull-ups are provided by the MAX17048 breakout module (~4.7kΩ each)
 
 ---
@@ -90,7 +93,12 @@ Pin 10 ───────────── CS
 GND   ────────────── GND
 3.3V  ────────────── DVDD / AVDD
 
-Pin 21 ───┬───────── (system status / power management output)
+External control signal (e.g., LDR / door sensor)
           │
-Pin 20 ───┘          (mirrored input for sleep/wake tracking)
+          ├──► Pin 21 (AON_WAKE)  ──► wakes board from deep sleep
+          │                           (cannot read as GPIO)
+          │
+          └──► Pin 20 (STATE_PIN) ──► read as regular GPIO
+                                        HIGH = active mode
+                                        LOW  → deep sleep (150 ms debounce)
 ```
