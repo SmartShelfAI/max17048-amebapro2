@@ -30,8 +30,8 @@
 | 17 | PD_17 | GPIO | — | 🔵 Free |
 | 18 | PD_16 | SERIAL2_RX | — | 🔵 Free |
 | 19 | PD_15 | SERIAL2_TX | — | 🔵 Free |
-| 20 | PD_14 | GPIO | — | 🔵 Free |
-| 21 | PA_2 | SERIAL1_TX / A6 | — | 🔵 Free |
+| 20 | PD_14 | GPIO | Power state tracking (mirrored signal from Pin 21) | ✅ Occupied |
+| 21 | PA_2 | SERIAL1_TX / A6 | System status / power management output | ✅ Occupied |
 | 22 | PA_3 | SERIAL1_RX / A7 | — | 🔵 Free |
 | 23 | PF_9 | LED_B (Blue) | On-board LED | ✅ Occupied |
 | 24 | PE_6 | LED_G (Green) | On-board LED | ✅ Occupied |
@@ -60,6 +60,7 @@
 - **Pin 9/10 cannot be used for MAX17048** without re-wiring ADS1256 DRDY/CS to free pins (3, 4, 5, 6, 8, 11)
 - **Pin 3 (SPI1_SS)** is free — can be used as additional GPIO if needed
 - **I2C bus on 12/13** supports multiple devices — currently SHT3x (temp/humidity) + MAX17048 (battery)
+- **Pin 20 / Pin 21** — power state tracking pair. Pin 21 outputs system status / power management signal, which is mirrored/detected on Pin 20 for sleep/wake state monitoring
 - All I2C pull-ups are provided by the MAX17048 breakout module (~4.7kΩ each)
 
 ---
@@ -67,8 +68,8 @@
 ## Wiring Diagram (ASCII)
 
 ```
-AMB82-mini          MAX17048 Module         ADS1256
-==========          ===============         =======
+AMB82-mini          MAX17048 Module         ADS1256          Power Track
+==========          ===============         =======          ===========
 3.3V  ───────────── VCC
 3.3V  ──┬─────────── SDA (via 4.7k pull-up)
         │
@@ -88,4 +89,8 @@ Pin 9  ───────────── DRDY
 Pin 10 ───────────── CS
 GND   ────────────── GND
 3.3V  ────────────── DVDD / AVDD
+
+Pin 21 ───┬───────── (system status / power management output)
+          │
+Pin 20 ───┘          (mirrored input for sleep/wake tracking)
 ```
